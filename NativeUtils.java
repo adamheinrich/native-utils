@@ -66,7 +66,7 @@ public class NativeUtils {
  
         // Obtain filename from path
         String[] parts = path.split("/");
-        String filename = (parts.length &gt; 1) ? parts[parts.length - 1] : null;
+        String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
  
         // Split filename to prexif and suffix (extension)
         String prefix = "";
@@ -74,11 +74,11 @@ public class NativeUtils {
         if (filename != null) {
             parts = filename.split("\\.", 2);
             prefix = parts[0];
-            suffix = (parts.length &gt; 1) ? "."+parts[parts.length - 1] : null; // Thanks, davs! :-)
+            suffix = (parts.length > 1) ? "."+parts[parts.length - 1] : null; // Thanks, davs! :-)
         }
  
         // Check if the filename is okay
-        if (filename == null || prefix.length() &lt; 3) {
+        if (filename == null || prefix.length() < 3) {
             throw new IllegalArgumentException("The filename has to be at least 3 characters long.");
         }
  
