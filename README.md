@@ -26,4 +26,4 @@ To load the dynamic library, just make sure it is packed inside the JAR archive 
 ## More information
 More information can be found in accompanying [blog post][1].
 
-[1]: http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar/
+[1]: https://www.adamheinrich.com/blog/2012/12/how-to-load-native-jni-library-from-jar/
