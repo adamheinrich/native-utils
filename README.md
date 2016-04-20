@@ -24,4 +24,6 @@ To load the dynamic library, just make sure it is packed inside the JAR archive 
     }
 
 ## More information
-The class was written in 2012 by Adam Heinrich. More information can be found in accompanying blog post (http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar/).
+More information can be found in accompanying [blog post][1].
+
+[1]: http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar/
