@@ -13,7 +13,7 @@ To load the dynamic library, just make sure it is packed inside the JAR archive 
     public class HelloJNI {  
         static {   
             try {    
-                NativeUtils.loadLibraryFromJar("/resources/libHelloJNI.so");   
+                NativeUtils.loadLibraryFromJar("/resources/" ,"HelloJNI");   
             } catch (IOException e) {
                 // This is probably not the best way to handle exception :-)    
                 e.printStackTrace();
