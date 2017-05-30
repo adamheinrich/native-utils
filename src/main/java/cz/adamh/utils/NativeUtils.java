@@ -48,21 +48,29 @@ public class NativeUtils {
      * The file from JAR is copied into system temporary directory and then loaded. The temporary file is deleted after exiting.
      * Method uses String as filename because the pathname is "abstract", not system-dependent.
      * 
-     * @param path The path of file inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
+     * @param path The path of file inside JAR as absolute path (beginning and ends with '/')
+     * @param libname name of lib to load from jar without  extension 
      * @throws IOException If temporary file creation or read/write operation fails
      * @throws IllegalArgumentException If source file (param path) does not exist
      * @throws IllegalArgumentException If the path is not absolute or if the filename is shorter than three characters (restriction of {@see File#createTempFile(java.lang.String, java.lang.String)}).
      */
-    public static void loadLibraryFromJar(String path) throws IOException {
+    public static void loadLibraryFromJar(String path ,String libName) throws IOException {
  
         if (!path.startsWith("/")) {
             throw new IllegalArgumentException("The path has to be absolute (start with '/').");
+        }else if(!path.endsWith("/")){
+            throw new IllegalArgumentException("The path has to be end with '/'.");
         }
+        
+        //Host platform dependent library name.extension 
+        path+= System.mapLibraryName(libName);
+        System.out.println(path);
  
         // Obtain filename from path
         String[] parts = path.split("/");
         String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
- 
+        
+        
         // Split filename to prexif and suffix (extension)
         String prefix = "";
         String suffix = null;
