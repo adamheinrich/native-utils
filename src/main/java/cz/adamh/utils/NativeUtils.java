@@ -24,7 +24,6 @@
 package cz.adamh.utils;
 
 import java.io.*;
-import java.net.URI;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.ProviderNotFoundException;
@@ -67,7 +66,7 @@ public class NativeUtils {
         String[] parts = path.split("/");
         String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
  
-        // Split filename to prexif and suffix (extension)
+        // Split filename to prefix and suffix (extension)
         String prefix = "";
         String suffix = null;
         if (filename != null) {
@@ -119,7 +118,7 @@ public class NativeUtils {
             while ((readBytes = is.read(buffer)) != -1) {
                 os.write(buffer, 0, readBytes);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             temp.delete();
             throw e;
         } finally {
