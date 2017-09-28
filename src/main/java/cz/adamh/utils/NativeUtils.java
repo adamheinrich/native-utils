@@ -63,7 +63,7 @@ public class NativeUtils {
         }
  
         // Obtain filename from path
-        String[] parts = path.split("/");
+        String[] parts = path.split(File.separator);
         String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
  
         // Split filename to prefix and suffix (extension)
