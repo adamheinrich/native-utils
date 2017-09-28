@@ -38,7 +38,9 @@ import java.nio.file.ProviderNotFoundException;
  *
  */
 public class NativeUtils {
- 
+
+    private static final int BUFFER_SIZE = 1024;
+
     /**
      * Private constructor - this class will never be instanced
      */
@@ -63,7 +65,7 @@ public class NativeUtils {
         }
  
         // Obtain filename from path
-        String[] parts = path.split("/");
+        String[] parts = path.split(File.separator);
         String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
  
         // Split filename to prefix and suffix (extension)
@@ -102,7 +104,7 @@ public class NativeUtils {
         }
 
         // Prepare buffer for data copying
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[BUFFER_SIZE];
         int readBytes;
 
         // Open and check input stream
