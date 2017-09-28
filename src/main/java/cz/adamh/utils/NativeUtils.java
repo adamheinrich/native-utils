@@ -38,7 +38,9 @@ import java.nio.file.ProviderNotFoundException;
  *
  */
 public class NativeUtils {
- 
+
+    private static final int BUFFER_SIZE = 1024;
+
     /**
      * Private constructor - this class will never be instanced
      */
@@ -102,7 +104,7 @@ public class NativeUtils {
         }
 
         // Prepare buffer for data copying
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[BUFFER_SIZE];
         int readBytes;
 
         // Open and check input stream
