@@ -39,8 +39,8 @@ import java.nio.file.ProviderNotFoundException;
  */
 public class NativeUtils {
  
-	private static File temporaryDir;
-	
+    private static File temporaryDir;
+    
     /**
      * Private constructor - this class will never be instanced
      */
@@ -76,8 +76,8 @@ public class NativeUtils {
  
         // Prepare temporary file
         if (temporaryDir == null) {
-        	temporaryDir = createTempDirectory("nativeutils");
-        	temporaryDir.deleteOnExit();
+            temporaryDir = createTempDirectory("nativeutils");
+            temporaryDir.deleteOnExit();
         }
         File temp = new File(temporaryDir, filename);
         
@@ -111,7 +111,7 @@ public class NativeUtils {
                 os.write(buffer, 0, readBytes);
             }
         } catch (Throwable e) {
-        	temp.delete();
+            temp.delete();
             throw e;
         } finally {
             // If read/write fails, close streams safely before throwing an exception
@@ -126,18 +126,18 @@ public class NativeUtils {
             if (tempFileIsPosix)
                 temp.delete();
             else
-            	temp.deleteOnExit();
+                temp.deleteOnExit();
         }
     }
     
     private static File createTempDirectory(String prefix) throws IOException
     {
-    	String tempDir = System.getProperty("java.io.tmpdir");
-    	File generatedDir = new File(tempDir, prefix + System.nanoTime());
-    	
-    	if (!generatedDir.mkdir())
-    		throw new IOException("Failed to create temp directory " + generatedDir.getName());
-    	
-    	return generatedDir;
+        String tempDir = System.getProperty("java.io.tmpdir");
+        File generatedDir = new File(tempDir, prefix + System.nanoTime());
+        
+        if (!generatedDir.mkdir())
+            throw new IOException("Failed to create temp directory " + generatedDir.getName());
+        
+        return generatedDir;
     }
 }
