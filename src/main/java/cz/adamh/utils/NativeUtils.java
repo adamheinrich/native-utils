@@ -39,12 +39,15 @@ import java.nio.file.ProviderNotFoundException;
  */
 public class NativeUtils {
  
+	private static File temporaryDir;
+	
     /**
      * Private constructor - this class will never be instanced
      */
     private NativeUtils() {
     }
  
+    
     /**
      * Loads library from current JAR archive
      * 
@@ -72,8 +75,11 @@ public class NativeUtils {
         }
  
         // Prepare temporary file
-        File tempDir = createTempDirectory("nativeutils");
-        File temp = new File(tempDir, filename);
+        if (temporaryDir == null) {
+        	temporaryDir = createTempDirectory("nativeutils");
+        	temporaryDir.deleteOnExit();
+        }
+        File temp = new File(temporaryDir, filename);
         
         boolean tempFileIsPosix = false;
         try {
@@ -95,10 +101,8 @@ public class NativeUtils {
 
         // Open and check input stream
         InputStream is = NativeUtils.class.getResourceAsStream(path);
-        if (is == null) {
-        	tempDir.delete();
+        if (is == null)
             throw new FileNotFoundException("File " + path + " was not found inside JAR.");
-        }
 
         // Open output stream and copy data between source file in JAR and the temporary file
         OutputStream os = new FileOutputStream(temp);
@@ -108,7 +112,6 @@ public class NativeUtils {
             }
         } catch (Throwable e) {
         	temp.delete();
-            tempDir.delete();
             throw e;
         } finally {
             // If read/write fails, close streams safely before throwing an exception
@@ -120,14 +123,10 @@ public class NativeUtils {
             // Load the library
             System.load(temp.getAbsolutePath());
         } finally {
-            if (tempFileIsPosix) {
+            if (tempFileIsPosix)
                 temp.delete();
-                tempDir.delete();
-            }
-            else {
+            else
             	temp.deleteOnExit();
-            	tempDir.deleteOnExit();
-            }
         }
     }
     
