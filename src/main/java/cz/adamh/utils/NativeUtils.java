@@ -26,7 +26,9 @@ package cz.adamh.utils;
 import java.io.*;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.ProviderNotFoundException;
+import java.nio.file.StandardCopyOption;
 
 /**
  * A simple library class which helps with loading dynamic libraries stored in the
@@ -39,25 +41,35 @@ import java.nio.file.ProviderNotFoundException;
  */
 public class NativeUtils {
  
+    /**
+     * The minimum length a prefix for a file has to have according to {@link File#createTempFile(String, String)}}.
+     */
+    private static final int MIN_PREFIX_LENGTH = 3;
+
+    /**
+     * Temporary directory which will contain the DLLs.
+     */
     private static File temporaryDir;
-    
+
     /**
      * Private constructor - this class will never be instanced
      */
     private NativeUtils() {
     }
- 
-    
+
     /**
      * Loads library from current JAR archive
      * 
-     * The file from JAR is copied into system temporary directory and then loaded. The temporary file is deleted after exiting.
+     * The file from JAR is copied into system temporary directory and then loaded. The temporary file is deleted after
+     * exiting.
      * Method uses String as filename because the pathname is "abstract", not system-dependent.
      * 
      * @param path The path of file inside JAR as absolute path (beginning with '/'), e.g. /package/File.ext
      * @throws IOException If temporary file creation or read/write operation fails
      * @throws IllegalArgumentException If source file (param path) does not exist
-     * @throws IllegalArgumentException If the path is not absolute or if the filename is shorter than three characters (restriction of {@see File#createTempFile(java.lang.String, java.lang.String)}).
+     * @throws IllegalArgumentException If the path is not absolute or if the filename is shorter than three characters
+     * (restriction of {@link File#createTempFile(java.lang.String, java.lang.String)}).
+     * @throws FileNotFoundException If the file could not be found inside the JAR.
      */
     public static void loadLibraryFromJar(String path) throws IOException {
  
@@ -70,7 +82,7 @@ public class NativeUtils {
         String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
  
         // Check if the filename is okay
-        if (filename == null || filename.length() < 3) {
+        if (filename == null || filename.length() < MIN_PREFIX_LENGTH) {
             throw new IllegalArgumentException("The filename has to be at least 3 characters long.");
         }
  
@@ -79,54 +91,44 @@ public class NativeUtils {
             temporaryDir = createTempDirectory("nativeutils");
             temporaryDir.deleteOnExit();
         }
+
         File temp = new File(temporaryDir, filename);
-        
-        boolean tempFileIsPosix = false;
+
+        try (InputStream is = NativeUtils.class.getResourceAsStream(path)) {
+            Files.copy(is, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            temp.delete();
+            throw e;
+        } catch (NullPointerException e) {
+            temp.delete();
+            throw new FileNotFoundException("File " + path + " was not found inside JAR.");
+        }
+
+        try {
+            System.load(temp.getAbsolutePath());
+        } finally {
+            if (isPosixCompliant()) {
+                // Assume POSIX compliant file system, can be deleted after loading
+                temp.delete();
+            } else {
+                // Assume non-POSIX, and don't delete until last file descriptor closed
+                temp.deleteOnExit();
+            }
+        }
+    }
+
+    private static boolean isPosixCompliant() {
         try {
             if (FileSystems.getDefault()
                     .supportedFileAttributeViews()
                     .contains("posix")) {
-                // Assume POSIX compliant file system, can be deleted after loading.
-                tempFileIsPosix = true;
+                return true;
             }
+            return false;
         } catch (FileSystemNotFoundException
                 | ProviderNotFoundException
                 | SecurityException e) {
-            // Assume non-POSIX, and don't delete until last file descriptor closed.
-        }
-
-        // Prepare buffer for data copying
-        byte[] buffer = new byte[1024];
-        int readBytes;
-
-        // Open and check input stream
-        InputStream is = NativeUtils.class.getResourceAsStream(path);
-        if (is == null)
-            throw new FileNotFoundException("File " + path + " was not found inside JAR.");
-
-        // Open output stream and copy data between source file in JAR and the temporary file
-        OutputStream os = new FileOutputStream(temp);
-        try {
-            while ((readBytes = is.read(buffer)) != -1) {
-                os.write(buffer, 0, readBytes);
-            }
-        } catch (Throwable e) {
-            temp.delete();
-            throw e;
-        } finally {
-            // If read/write fails, close streams safely before throwing an exception
-            os.close();
-            is.close();
-        }
-
-        try {
-            // Load the library
-            System.load(temp.getAbsolutePath());
-        } finally {
-            if (tempFileIsPosix)
-                temp.delete();
-            else
-                temp.deleteOnExit();
+            return false;
         }
     }
     
