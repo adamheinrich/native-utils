@@ -40,18 +40,23 @@ import java.nio.file.StandardCopyOption;
  *
  */
 public class NativeUtils {
-
+ 
     /**
      * The minimum length a prefix for a file has to have according to {@link File#createTempFile(String, String)}}.
      */
     private static final int MIN_PREFIX_LENGTH = 3;
 
     /**
+     * Temporary directory which will contain the DLLs.
+     */
+    private static File temporaryDir;
+
+    /**
      * Private constructor - this class will never be instanced
      */
     private NativeUtils() {
     }
- 
+
     /**
      * Loads library from current JAR archive
      * 
@@ -76,26 +81,18 @@ public class NativeUtils {
         String[] parts = path.split("/");
         String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
  
-        // Split filename to prefix and suffix (extension)
-        String prefix = "";
-        String suffix = null;
-        if (filename != null) {
-            parts = filename.split("\\.", 2);
-            prefix = parts[0];
-            suffix = (parts.length > 1) ? "." + parts[1] : null; // Thanks, davs! :-)
-        }
- 
         // Check if the filename is okay
-        if (filename == null || prefix.length() < MIN_PREFIX_LENGTH) {
+        if (filename == null || filename.length() < MIN_PREFIX_LENGTH) {
             throw new IllegalArgumentException("The filename has to be at least 3 characters long.");
         }
  
         // Prepare temporary file
-        File temp = File.createTempFile(prefix, suffix);
-
-        if (!temp.exists()) {
-            throw new FileNotFoundException("File " + temp.getAbsolutePath() + " does not exist.");
+        if (temporaryDir == null) {
+            temporaryDir = createTempDirectory("nativeutils");
+            temporaryDir.deleteOnExit();
         }
+
+        File temp = new File(temporaryDir, filename);
 
         try (InputStream is = NativeUtils.class.getResourceAsStream(path)) {
             Files.copy(is, temp.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -133,5 +130,16 @@ public class NativeUtils {
                 | SecurityException e) {
             return false;
         }
+    }
+    
+    private static File createTempDirectory(String prefix) throws IOException
+    {
+        String tempDir = System.getProperty("java.io.tmpdir");
+        File generatedDir = new File(tempDir, prefix + System.nanoTime());
+        
+        if (!generatedDir.mkdir())
+            throw new IOException("Failed to create temp directory " + generatedDir.getName());
+        
+        return generatedDir;
     }
 }
