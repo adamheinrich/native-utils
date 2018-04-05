@@ -32,11 +32,11 @@ import java.nio.file.StandardCopyOption;
 
 /**
  * A simple library class which helps with loading dynamic libraries stored in the
- * JAR archive. These libraries usualy contain implementation of some methods in
+ * JAR archive. These libraries usually contain implementation of some methods in
  * native code (using JNI - Java Native Interface).
  * 
- * @see http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar
- * @see https://github.com/adamheinrich/native-utils
+ * @see <a href="http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar">http://adamheinrich.com/blog/2012/how-to-load-native-jni-library-from-jar</a>
+ * @see <a href="https://github.com/adamheinrich/native-utils">https://github.com/adamheinrich/native-utils</a>
  *
  */
 public class NativeUtils {
@@ -45,6 +45,7 @@ public class NativeUtils {
      * The minimum length a prefix for a file has to have according to {@link File#createTempFile(String, String)}}.
      */
     private static final int MIN_PREFIX_LENGTH = 3;
+    public static final String NATIVE_FOLDER_PATH_PREFIX = "nativeutils";
 
     /**
      * Temporary directory which will contain the DLLs.
@@ -73,7 +74,7 @@ public class NativeUtils {
      */
     public static void loadLibraryFromJar(String path) throws IOException {
  
-        if (!path.startsWith("/")) {
+        if (null == path || !path.startsWith("/")) {
             throw new IllegalArgumentException("The path has to be absolute (start with '/').");
         }
  
@@ -88,7 +89,7 @@ public class NativeUtils {
  
         // Prepare temporary file
         if (temporaryDir == null) {
-            temporaryDir = createTempDirectory("nativeutils");
+            temporaryDir = createTempDirectory(NATIVE_FOLDER_PATH_PREFIX);
             temporaryDir.deleteOnExit();
         }
 
@@ -119,21 +120,17 @@ public class NativeUtils {
 
     private static boolean isPosixCompliant() {
         try {
-            if (FileSystems.getDefault()
+            return FileSystems.getDefault()
                     .supportedFileAttributeViews()
-                    .contains("posix")) {
-                return true;
-            }
-            return false;
+                    .contains("posix");
         } catch (FileSystemNotFoundException
                 | ProviderNotFoundException
                 | SecurityException e) {
             return false;
         }
     }
-    
-    private static File createTempDirectory(String prefix) throws IOException
-    {
+
+    private static File createTempDirectory(String prefix) throws IOException {
         String tempDir = System.getProperty("java.io.tmpdir");
         File generatedDir = new File(tempDir, prefix + System.nanoTime());
         
