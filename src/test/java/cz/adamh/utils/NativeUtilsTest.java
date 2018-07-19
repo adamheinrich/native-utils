@@ -22,7 +22,7 @@ public class NativeUtilsTest {
         NativeUtils.loadLibraryFromJar("/libtest.so");
     }
 
-    @Test(expected=NullPointerException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void testLoadLibraryNullPath() throws IOException {
         NativeUtils.loadLibraryFromJar(null);
     }
