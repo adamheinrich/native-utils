@@ -29,6 +29,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.ProviderNotFoundException;
 import java.nio.file.StandardCopyOption;
+import java.util.regex.Pattern;
 
 /**
  * A simple library class which helps with loading dynamic libraries stored in the
@@ -46,6 +47,7 @@ public class NativeUtils {
      */
     private static final int MIN_PREFIX_LENGTH = 3;
     public static final String NATIVE_FOLDER_PATH_PREFIX = "nativeutils";
+    public static final String IN_USE_FILE = "in_use";
 
     /**
      * Temporary directory which will contain the DLLs.
@@ -91,6 +93,17 @@ public class NativeUtils {
         if (temporaryDir == null) {
             temporaryDir = createTempDirectory(NATIVE_FOLDER_PATH_PREFIX);
             temporaryDir.deleteOnExit();
+
+            // For Windows issue where DLL is not unloaded, so DLL file
+            // remains locked, so deleteOnExit() fails.
+            // https://www.adamh.cz/blog/2012/12/how-to-load-native-jni-library-from-jar/#comment-1760518031
+            // We will create an "in_use" file will get deleted, then use it as
+            // a flag to indicate that we can clean up on the next run.
+            if (isWindows()) {
+                File inUse = new File(temporaryDir, IN_USE_FILE);
+                inUse.createNewFile();
+                inUse.deleteOnExit();
+            }
         }
 
         File temp = new File(temporaryDir, filename);
@@ -116,6 +129,10 @@ public class NativeUtils {
                 temp.deleteOnExit();
             }
         }
+
+        if (isWindows()) {
+            cleanUpOldNativeUtilsDirectories();
+        }
     }
 
     private static boolean isPosixCompliant() {
@@ -138,5 +155,42 @@ public class NativeUtils {
             throw new IOException("Failed to create temp directory " + generatedDir.getName());
         
         return generatedDir;
+    }
+
+    private static boolean isWindows() {
+        return System.getProperty("os.name").startsWith("Windows");
+    }
+
+    private static void cleanUpOldNativeUtilsDirectories() throws IOException {
+
+        String tmpDirName = System.getProperty("java.io.tmpdir");
+        File tmpDir = new File(tmpDirName);
+        File[] oldDirectories = tmpDir.listFiles(new OldNativeUtilsDirectoryFilter());
+
+        for (File oldDir : oldDirectories) {
+            for (File file : oldDir.listFiles()) {
+                //System.out.println( "deleting: " + file.getAbsolutePath());
+                file.delete();
+            }
+            //System.out.println( "deleting: " + oldDir.getAbsolutePath());
+            oldDir.delete();
+        }
+    }
+
+    private static class OldNativeUtilsDirectoryFilter implements FileFilter {
+        private Pattern nativeUtilsDir = Pattern.compile("^" + NATIVE_FOLDER_PATH_PREFIX + "\\d*$");
+
+        public boolean accept(File directory) {
+            if (!nativeUtilsDir.matcher(directory.getName()).matches()) {
+                return false;
+            }
+
+            for (File file : directory.listFiles()) {
+                if (IN_USE_FILE.equals(file.getName())) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }
