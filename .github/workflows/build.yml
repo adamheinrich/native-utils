@@ -19,9 +19,14 @@ jobs:
     - name: Build
       run: mvn -B install source:jar --file pom.xml
 
-    - name: Archive artifacts
+    - name: Archive JAR artifact
       uses: actions/upload-artifact@v1
       with:
-        name: artifacts
+        name: native-utils-1.0
         path: target/native-utils-1.0.jar
+
+    - name: Archive sources artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: native-utils-1.0-sources
         path: target/native-utils-1.0-sources.jar
