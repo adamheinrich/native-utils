@@ -21,12 +21,13 @@ jobs:
         java-version: 1.7
 
     - name: Build and deploy
-      run: mvn -B install deploy --file pom.xml
+      run: mvn -B install source:jar deploy --file pom.xml
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Archive JAR artifact
+    - name: Archive artifacts
       uses: actions/upload-artifact@v1
       with:
-        name: native-utils-1.0.jar
+        name: artifacts
         path: target/native-utils-1.0.jar
+        path: target/native-utils-1.0-sources.jar
