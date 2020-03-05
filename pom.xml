@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>cz.adamh.utils</groupId>
     <artifactId>native-utils</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version><!-- Github doesn't do snapshots -->
 
     <licenses>
         <license>
@@ -39,5 +39,16 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub regwhitton Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/regwhitton/native-utils</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </distributionManagement>
 
 </project>

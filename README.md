@@ -27,3 +27,43 @@ To load the dynamic library, just make sure it is packed inside the JAR archive 
 More information can be found in accompanying [blog post][1].
 
 [1]: https://www.adamheinrich.com/blog/2012/12/how-to-load-native-jni-library-from-jar/
+
+## Maven
+
+You need a Github account and a personal access token to build against Github's Maven Repo.
+
+Add the following dependency and repository to your pom.xml:
+
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>cz.adamh.utils</groupId>
+            <artifactId>native-utils</artifactId>
+            <version>1.0</version>
+        </dependency>
+    </dependencies>
+    ...
+    <repositories>
+        <repository>
+            <id>github</id>
+            <name>GitHub regwhitton Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/regwhitton/native-utils</url>
+        </repository>
+    </repositories>
+
+Create a Github personal access token. See [Creating a personal access token for the command line](https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line)
+
+Edit your ~/.m2/settings.xml and add a server entry.
+
+    <settings ...>
+        ...
+        <servers>
+            <server>
+                <id>github</id>
+                <username>your_github_username</username>
+                <password>your_github_access_token</password>
+            </server>
+        </servers>
+        ...
+    </settings>
+
